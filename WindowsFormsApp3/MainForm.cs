@@ -160,7 +160,8 @@ namespace LEDStabilization
 		private void rotateAndrecord(object sender, EventArgs e)
         {
 
-			WriteToFile("Home offset is " + homeOffset.ToString() + Environment.NewLine);
+			WriteToFile("Home offset is " + homeOffset.ToString() + Environment.NewLine +
+				"theta0 (Initial angle from Home) is (deg) " + theta0TextBox.Text + Environment.NewLine);
 			WriteToFile("angle from Home(deg)" + "\t" + "angle from theta0(deg)" + "\t" + "photocurrent" + Environment.NewLine);
 
 
