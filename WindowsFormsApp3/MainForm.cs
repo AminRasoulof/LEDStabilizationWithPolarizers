@@ -173,26 +173,25 @@ namespace LEDStabilization
                 decimal theta = 0;
 				decimal fromtheta0 = Convert.ToDecimal(theta0TextBox.Text);
 
-
+				MessageBox.Show(fromtheta0.ToString());
 				addressedDevice.Home(ELLBaseDevice.DeviceDirection.AntiClockwise);
 				Thread.Sleep(5000);
 
-				addressedDevice.MoveRelative(Convert.ToDecimal(theta0TextBox.Text));
+				addressedDevice.MoveRelative(fromtheta0);
 				Thread.Sleep(3000);
 
 				while (theta <= Convert.ToDecimal(totalRotationTextBox.Text) + dtheta)
                 {
-                    addressedDevice.MoveRelative(dtheta);
-                    Thread.Sleep(1500);
-
-                    
                     angleTextBox.Text = theta.ToString();
-                    Thread.Sleep(250);
+
                     var krochmann = ReadKrochmann();
                     string s = theta.ToString() + "\t" + fromtheta0.ToString() + "\t" + krochmann + Environment.NewLine;
 
-                    WriteToFile(s);
-                    Thread.Sleep(1500);
+					addressedDevice.MoveRelative(dtheta);
+					Thread.Sleep(1500);
+
+					WriteToFile(s);
+                    Thread.Sleep(500);
 
 					theta += dtheta;
 					fromtheta0 += dtheta;
@@ -261,8 +260,6 @@ namespace LEDStabilization
 			}
 
 		}
-
-
 
 		public int DCVoltageFrontInput()
 		{
