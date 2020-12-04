@@ -165,8 +165,6 @@ namespace LEDStabilization
 			WriteToFile("angle from Home(deg)" + "\t" + "angle from theta0(deg)" + "\t" + "photocurrent" + Environment.NewLine);
 
 
-			
-
 			for (int i = 0; i < Convert.ToInt32(numberOfRepeatsTextBox.Text); i++)
             {
                 decimal dtheta = Convert.ToDecimal(dthetaTextBox.Text);
@@ -418,6 +416,13 @@ namespace LEDStabilization
         private void connectKrochmannButton_Click(object sender, EventArgs e)
         {
 			ConnectKrochmann();
+        }
+
+        private void MainForm_FormClosing(object sender, FormClosingEventArgs e)
+        {
+			Application.ExitThread();
+			Environment.Exit(0);
+
         }
     }
 }

@@ -1,0 +1,7 @@
+Home offset is 0
+theta0 (Initial angle from Home) is (deg) 54.506
+angle from Home(deg)	angle from theta0(deg)	photocurrent
+0	54.506	9.48616666666667E-08
+40	94.506	6.4946E-05
+80	134.506	5.76253333333333E-05
+120	174.506	9.45906666666667E-07
