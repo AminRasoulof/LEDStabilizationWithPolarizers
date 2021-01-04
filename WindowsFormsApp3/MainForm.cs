@@ -21,9 +21,9 @@ using System.Text.RegularExpressions;
 
 namespace LEDStabilization
 {
-    public partial class MainForm : Form
-    {
-		string filePath="";
+	public partial class MainForm : Form
+	{
+		string filePath = "";
 		ELLDevices ellDevices;
 		double lockRatio;
 		Device dmm;
@@ -32,89 +32,73 @@ namespace LEDStabilization
 		double initialSignal;
 		double currentAngle;
 		ELLDevice addressedDevice;
-        SerialPort serialPort;
+		SerialPort serialPort;
 		int numberofMeasurements = 3;
 		decimal homeOffset;
 
 		public MainForm()
-        {
-            InitializeComponent();
+		{
+			InitializeComponent();
 			getFeedBack = new System.Windows.Forms.Timer();
 			getFeedBack.Tick += new EventHandler(FeedBack);
-            getFeedBack.Interval = Convert.ToInt32(feedbackIntervalTextBox.Text)*1000;
+			getFeedBack.Interval = Convert.ToInt32(feedbackIntervalTextBox.Text) * 1000;
 			ellDevices = new ELLDevices();
-        }
+		}
 
 		private void FeedBack(object obj, EventArgs e)
-        {			
+		{
 			double theta;
 			double tolerance = Convert.ToDouble(toleranceTextBox.Text) / 100.0;
 			textBox2.Text = initialSignal.ToString();
 
-
-            
-
 			double change = 0;
-            for (int i = 0; i < 5; i++)
-            {
-				var signalBeforeCorrection = ReadKrochmann();
-				var siDiodeSignlaBeforeCorrection = ReadVoltageFrontPanel();
-				double signalAfterCorrection = 0;
-				textBox2.Text = signalBeforeCorrection.ToString();
 
+			var signalBeforeCorrection = ReadKrochmann();
+			double signalAfterCorrection = 0.0;
 
-				change = (initialSignal - signalBeforeCorrection) / initialSignal;
-				theta = Math.Pow(2, i);
-                if (Math.Abs(change) > tolerance)
-                {
-                    if (change == Math.Abs(change))
-                    {
-                        //theta = Math.Acos(Math.Sqrt(signalBeforeCorrection / initialSignal)) * 180.0 / Math.PI;
-                        angleTextBox.Text = currentAngle.ToString();
+			change = (initialSignal - signalBeforeCorrection) / initialSignal;
 
-                        addressedDevice.MoveRelative(-(decimal)(theta));
-                        currentAngle -= theta;
-                    }
-                    else
-                    {
-                        //theta = Math.Acos(Math.Sqrt(initialSignal / signalBeforeCorrection)) * 180.0 / Math.PI;
-
-                        angleTextBox.Text = currentAngle.ToString();
-
-                        addressedDevice.MoveRelative((decimal)(theta));
-                        currentAngle += theta;
-                    }
-                    signalAfterCorrection = ReadKrochmann();
-
-
-                }
-
-
-				var String = i.ToString() + "\t" + initialSignal.ToString() + "\t" + signalAfterCorrection.ToString() + "\t" + signalBeforeCorrection.ToString() + "\t" + change.ToString() +
-				"\t" + siDiodeSignlaBeforeCorrection + Environment.NewLine;
-
-				textBox1.AppendText(String);
-
-
-				try
+			var counter = 1;
+			while (Math.Abs(change) > tolerance)
+			{
+				if (change == Math.Abs(change))
 				{
-					using (StreamWriter f = new StreamWriter("C:\\Users\\rasoulofa\\Documents\\GUIs\\ThorlabsEllipticStage\\Output4.txt", true))
-					{
-						f.Write(String);
-					}
+					theta = Math.Acos(Math.Sqrt(signalBeforeCorrection / initialSignal)) * 180.0 / Math.PI;
+
+					addressedDevice.MoveRelative(-(decimal)(theta));
 				}
-				catch (Exception)
+				else
 				{
-					throw;
+					theta = Math.Acos(Math.Sqrt(initialSignal / signalBeforeCorrection)) * 180.0 / Math.PI;
+
+					addressedDevice.MoveRelative((decimal)(theta));
+				}
+				signalAfterCorrection = ReadKrochmann();
+
+				change = (initialSignal - signalAfterCorrection) / initialSignal;
+
+				if (counter >= 5)
+				{
+					string str = "";
+					if (Math.Abs(change) > tolerance)
+					{
+						str = initialSignal.ToString() + "\t" + signalAfterCorrection + "\t" + "could not correct";
+					}
+					else
+					{
+						str = initialSignal.ToString() + "\t" + signalAfterCorrection + "\t" + "corrected";
+					}
+
+					WriteToFile(str);
+					break;
 				}
 			}
-			 
-			
 
-            
-        }
 
-		
+
+		}
+
+
 
 		private void comPortButton1_Click(object sender, EventArgs e)
 		{
@@ -146,10 +130,10 @@ namespace LEDStabilization
 			}
 		}
 
-		
 
-        private void disconnectELLStageButton_Click(object sender, EventArgs e)
-        {
+
+		private void disconnectELLStageButton_Click(object sender, EventArgs e)
+		{
 			if (ELLDevicePort.Disconnect())
 			{
 				textBox1.Text += Environment.NewLine + "device disconnected";
@@ -158,7 +142,7 @@ namespace LEDStabilization
 
 
 		private void rotateAndrecord(object sender, EventArgs e)
-        {
+		{
 
 			WriteToFile("Home offset is " + homeOffset.ToString() + Environment.NewLine +
 				"theta0 (Initial angle from Home) is (deg) " + theta0TextBox.Text + Environment.NewLine);
@@ -166,12 +150,11 @@ namespace LEDStabilization
 
 
 			for (int i = 0; i < Convert.ToInt32(numberOfRepeatsTextBox.Text); i++)
-            {
-                decimal dtheta = Convert.ToDecimal(dthetaTextBox.Text);
-                decimal theta = 0;
+			{
+				decimal dtheta = Convert.ToDecimal(dthetaTextBox.Text);
+				decimal theta = 0;
 				decimal fromtheta0 = Convert.ToDecimal(theta0TextBox.Text);
 
-				MessageBox.Show(fromtheta0.ToString());
 				addressedDevice.Home(ELLBaseDevice.DeviceDirection.AntiClockwise);
 				Thread.Sleep(5000);
 
@@ -179,31 +162,31 @@ namespace LEDStabilization
 				Thread.Sleep(3000);
 
 				while (theta <= Convert.ToDecimal(totalRotationTextBox.Text) + dtheta)
-                {
-                    angleTextBox.Text = theta.ToString();
+				{
+					angleTextBox.Text = theta.ToString();
 
-                    var krochmann = ReadKrochmann();
-                    string s = theta.ToString() + "\t" + fromtheta0.ToString() + "\t" + krochmann + Environment.NewLine;
+					var krochmann = ReadKrochmann();
+					string s = theta.ToString() + "\t" + fromtheta0.ToString() + "\t" + krochmann + Environment.NewLine;
 
 					addressedDevice.MoveRelative(dtheta);
 					Thread.Sleep(1500);
 
 					WriteToFile(s);
-                    Thread.Sleep(500);
+					Thread.Sleep(500);
 
 					theta += dtheta;
 					fromtheta0 += dtheta;
 
 				}
 
-				
-            }
+
+			}
 
 
-        }
+		}
 
 		private void WriteToFile(string s)
-        {
+		{
 			try
 			{
 				using (StreamWriter f = new StreamWriter(filePath, true))
@@ -218,24 +201,29 @@ namespace LEDStabilization
 			}
 		}
 
-        
 
-        private void lockButton_Click(object sender, EventArgs e)
-        {
-			
+
+		private void lockButton_Click(object sender, EventArgs e)
+		{
+			addressedDevice.MoveRelative((decimal)90);
+			Thread.Sleep(1000);
+			initialSignal = ReadKrochmann();
+
+
+
 			lockRatio = Convert.ToDouble(lockRatioTextBox.Text);
 			double theta = Math.Acos(Math.Sqrt(lockRatio / 100)) * 180.0 / Math.PI;
+
+
 			currentAngle = theta;
-			angleTextBox.Text = currentAngle.ToString();
-			angleTextBox.Text = theta.ToString();
+
 			addressedDevice.MoveRelative((decimal)theta);
-            initialSignal = ReadKrochmann();
-            textBox1.Text = "";
-			DCVoltageFrontInput();
+
+			textBox1.Text = "";
 			getFeedBack.Start();
 		}
 
-        
+
 
 
 		public double ReadVoltageFrontPanel()
@@ -244,9 +232,9 @@ namespace LEDStabilization
 
 			try
 			{
-                for (int i = 0; i < numberofMeasurements; i++)
-                {
-                    dmm.Write("MEAS:VOLT?");
+				for (int i = 0; i < numberofMeasurements; i++)
+				{
+					dmm.Write("MEAS:VOLT?");
 					output += Convert.ToDouble(Regex.Replace(dmm.ReadString().Substring(0, 15), @"\t|\n|\r", ""));
 				}
 				return output / numberofMeasurements;
@@ -283,7 +271,7 @@ namespace LEDStabilization
 		////////////////////////////////////////////////////////////////////////////////////
 		////////////////////////////////////////////////////////////////////////////////////
 		private void openFileButton_Click(object sender, EventArgs e)
-        {
+		{
 			SaveFileDialog saveFileDialog1 = new SaveFileDialog();
 
 			saveFileDialog1.Filter = "txt files (*.txt)|*.txt|All files (*.*)|*.*";
@@ -372,14 +360,14 @@ namespace LEDStabilization
 		}
 
 		private bool ConnectKrochmann()
-        {
-            if (serialPort==null)
-            {
-                serialPort = new SerialPort(comPortComboBox2.Text, 9600, Parity.None, 8, StopBits.One);
-                serialPort.Handshake = Handshake.XOnXOff;
-                serialPort.RtsEnable = true;
-                serialPort.DtrEnable = true; 
-            }
+		{
+			if (serialPort == null)
+			{
+				serialPort = new SerialPort(comPortComboBox2.Text, 9600, Parity.None, 8, StopBits.One);
+				serialPort.Handshake = Handshake.XOnXOff;
+				serialPort.RtsEnable = true;
+				serialPort.DtrEnable = true;
+			}
 
 			if (!serialPort.IsOpen)
 			{
@@ -394,10 +382,10 @@ namespace LEDStabilization
 					return false;
 				}
 			}
-            else
-            {
+			else
+			{
 				return true;
-            }
+			}
 		}
 
 		private double ReadKrochmann()
@@ -413,16 +401,16 @@ namespace LEDStabilization
 			return output / numberofMeasurements;
 		}
 
-        private void connectKrochmannButton_Click(object sender, EventArgs e)
-        {
+		private void connectKrochmannButton_Click(object sender, EventArgs e)
+		{
 			ConnectKrochmann();
-        }
+		}
 
-        private void MainForm_FormClosing(object sender, FormClosingEventArgs e)
-        {
+		private void MainForm_FormClosing(object sender, FormClosingEventArgs e)
+		{
 			Application.ExitThread();
 			Environment.Exit(0);
 
-        }
-    }
+		}
+	}
 }
